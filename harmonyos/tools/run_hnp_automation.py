@@ -70,7 +70,9 @@ def main():
     out=a.out.resolve();out.mkdir(parents=True,exist_ok=False)
     # Reuse the loopback-server validation; retain explicit target on every call.
     HarmonyUI(out,target=a.target,server=a.hdc_server)
-    lock=(Path.home()/'.cache/ho-ollama/emulator-client-test.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    lock_path=Path.home()/'.cache/ho-ollama/emulator-client-test.lock'
+    lock_path.parent.mkdir(parents=True,exist_ok=True)
+    lock=lock_path.open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     (out/'cases.json').write_text(json.dumps(spec,indent=2));counter=0
     def command(args,label,timeout=35):
         nonlocal counter

@@ -1,14 +1,11 @@
-# HarmonyOS downstream maintenance
+# HarmonyOS port maintenance
 
-This directory owns the existing CPU HarmonyOS port and its portable build/test tools.
-Preserve upstream source history, licenses, and platform behavior outside HarmonyOS.
-Keep the tested upstream base distinct from the downstream revision and actual binary hashes.
-Use explicit SDK, compiler, output and cross-repository source arguments. Never require the old pico checkout.
-Keep generated files, SDKs, signing keys, device identities and model weights out of Git.
-Do not add the fused NPU model or its compiler/runtime to this CPU port.
-Do not set RLIMIT_AS or request an exception for it; that limit was permanently removed.
-Build/host-test passes do not imply device numerical, lifecycle or release qualification.
-No device deployment, signing, reboot or user-setting change is part of repository preparation.
-Upstream contributions are a separate human-reviewed activity; do not open PRs automatically.
-
-Keep Ascend C full-network operator construction and optimization in the private ho-llama-models repository. Future public llama.cpp changes may load/invoke a released operator only after correctness and matched performance qualification. Do not copy private sources/build recipes into this fork.
+Keep only source, documentation and tests needed to build and run the HarmonyOS port and suitable for upstream review.
+Preserve upstream behavior on other platforms, licenses and commit history.
+Keep whole-project architecture, model/operator optimization, private experiments and historical session records outside this fork.
+Dependencies are external: document official download/install links and required versions; do not commit SDKs, DDKs, installers or downloaded packages.
+Keep generated binaries, HAP/HNP/OMC, weights, converted tensors, logs, traces and test-result receipts outside tracked source.
+Use explicit toolchain, source, target and output arguments; no personal device or workspace paths.
+Do not set RLIMIT_AS. Keep bounded execution and owned-process cleanup in device tests.
+Compilation and host tests do not establish target numerical, permission or release qualification.
+Do not submit upstream PRs automatically. Publishing this downstream fork does not imply upstream acceptance.

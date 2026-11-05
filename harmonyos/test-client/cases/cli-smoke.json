@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "ollama-help",
+      "argv": [
+        "ollama",
+        "--help"
+      ],
+      "stdout_contains": [
+        "Usage:"
+      ]
+    },
+    {
+      "name": "llama-cli-help",
+      "argv": [
+        "llama-cli",
+        "--help"
+      ],
+      "stdout_contains": [
+        "--help"
+      ]
+    }
+  ]
+}

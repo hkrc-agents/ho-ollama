@@ -1,4 +1,4 @@
-//go:build harmonyos && !pico_native_services
+//go:build harmonyos
 
 package server
 

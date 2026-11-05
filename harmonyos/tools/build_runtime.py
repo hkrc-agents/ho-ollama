@@ -83,8 +83,6 @@ def main():
                         help='ARM64 is compile-only and requires --native-only; never deploys')
     parser.add_argument('--tls', action='store_true',
                         help='Candidate only: build upstream LibreSSL-backed HTTPS support')
-    parser.add_argument('--experimental-system-tls', action='store_true',
-                        help='Unqualified NetStack adapter; HNP ELF loading is blocked on API23')
     parser.add_argument('--router', action='store_true',
                         help='Candidate only: enable upstream subprocess/router support')
     parser.add_argument('--go', type=Path, help='Explicit host Go compiler for an isolated cache')
@@ -93,8 +91,6 @@ def main():
         target = native_target(options.arch, options.native_only)
     except ValueError as error:
         parser.error(str(error))
-    if options.experimental_system_tls and not options.tls:
-        parser.error('--experimental-system-tls requires --tls')
     cache, out = options.cache.resolve(), options.out.resolve()
     validate_native_output(options.arch, out)
     cache.mkdir(parents=True, exist_ok=True)
@@ -118,14 +114,9 @@ def main():
     for file in sorted((ollama / 'llama/compat').glob('*.patch')):
         patch(runner, file)
     patch(runner, affinity)
-    if options.experimental_system_tls:
-        tls_patch = options.llama_port.resolve() / 'harmonyos/system-tls.patch'
-        run('git', 'apply', '--unidiff-zero', '--recount', '--check', tls_patch, cwd=runner)
-        run('git', 'apply', '--unidiff-zero', '--recount', tls_patch, cwd=runner)
-        shutil.copy2(options.llama_port.resolve() / 'harmonyos/system_tls.h', runner / 'common/ohos-system-tls.h')
-    elif options.tls:
-        patch(runner,options.llama_port.resolve()/'harmonyos/http-ca-store.patch')
-        shutil.copy2(options.llama_port.resolve()/'harmonyos/http_ca_store.h',runner/'common/ohos-http-ca-store.h')
+    if options.tls:
+        patch(runner, options.llama_port.resolve()/'harmonyos/http-ca-store.patch')
+        shutil.copy2(options.llama_port.resolve()/'harmonyos/http_ca_store.h', runner/'common/ohos-http-ca-store.h')
     (out / 'source-selection.json').write_text(json.dumps({
         'policy': 'pinned-git-objects-plus-owned-port-adapters', 'source_worktree_copied': False,
         'ollama': str(ollama), 'runner': str(runner),
@@ -141,7 +132,7 @@ def main():
         '-DGGML_AVX=OFF', '-DGGML_AVX2=OFF', '-DGGML_FMA=OFF', '-DGGML_F16C=OFF', '-DGGML_SSE42=OFF',
         '-DLLAMA_OPENSSL=OFF', '-DLLAMA_CURL=OFF',
         '-DLLAMA_BUILD_LIBRESSL='+('ON' if options.tls else 'OFF'),
-        '-DPICO_OHOS_SYSTEM_TLS='+('ON' if options.experimental_system_tls else 'OFF'),
+
         '-DLLAMA_SUBPROCESS='+('ON' if options.router else 'OFF'),
         '-DLLAMA_BUILD_TESTS=ON', '-DLLAMA_BUILD_EXAMPLES=ON', '-DLLAMA_BUILD_TOOLS=ON',
         '-DLLAMA_BUILD_SERVER=ON', '-DLLAMA_BUILD_APP=OFF', '-DLLAMA_BUILD_UI=OFF',
@@ -193,8 +184,8 @@ def main():
                 'sdk_files': {str(p.relative_to(sdk)): hashlib.sha256(p.read_bytes()).hexdigest()
                               for p in sdk.rglob('*') if p.is_file()},
                 'features_requested': {'tls_libressl': options.tls, 'subprocess_router': options.router,
-                                       'experimental_system_tls': options.experimental_system_tls,
-                                       'ohos_ca_store':options.tls and not options.experimental_system_tls},
+
+                                       'ohos_ca_store':options.tls},
                 'tls_dependency_archive_sha256': LIBRESSL_ARCHIVE_SHA256 if options.tls else None,
                 'limitations': ['ARM64 separate qualification'] +
                     ([] if options.tls else ['TLS off']) +

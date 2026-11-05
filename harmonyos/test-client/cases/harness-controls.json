@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "split-io-eof-exit7",
+      "argv": [
+        "pico-client-fixture",
+        "io"
+      ],
+      "stdin": "HNP_INPUT_EOF_OK\n",
+      "expect_exit": 7,
+      "stdout_contains": [
+        "HNP_INPUT_EOF_OK"
+      ],
+      "stderr_contains": [
+        "fixture-stderr"
+      ]
+    },
+    {
+      "name": "binary-output",
+      "argv": [
+        "pico-client-fixture",
+        "binary"
+      ],
+      "stdout_base64_equals": "AP+ACg=="
+    },
+    {
+      "name": "timeout-reap",
+      "argv": [
+        "pico-client-fixture",
+        "wait"
+      ],
+      "timeout_ms": 1200,
+      "expect_timeout": true,
+      "stderr_contains": [
+        "fixture-waiting"
+      ]
+    },
+    {
+      "name": "cancel-reap",
+      "argv": [
+        "pico-client-fixture",
+        "wait"
+      ],
+      "timeout_ms": 20000,
+      "cancel_after_ms": 1000,
+      "expect_cancelled": true,
+      "stderr_contains": [
+        "fixture-waiting"
+      ]
+    },
+    {
+      "name": "recovery-after-cancel",
+      "argv": [
+        "ollama",
+        "--help"
+      ],
+      "stdout_contains": [
+        "Usage:"
+      ]
+    }
+  ]
+}

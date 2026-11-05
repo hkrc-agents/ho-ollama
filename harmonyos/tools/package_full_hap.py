@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import zipfile
-from package_hap import extract_payload, check_shutdown_contract, check_elf_native_identity, check_elf_build_mode, check_embedded_frontend
+from hap_contract import extract_payload, check_shutdown_contract, check_elf_native_identity, check_elf_build_mode, check_embedded_frontend
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()

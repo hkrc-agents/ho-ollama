@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(HnpClient LANGUAGES CXX)
+add_library(clienthnp SHARED client.cpp)
+target_compile_features(clienthnp PRIVATE cxx_std_17)
+target_compile_options(clienthnp PRIVATE -Wall -Wextra -Werror -Wno-unused-command-line-argument)
+target_link_libraries(clienthnp PRIVATE libace_napi.z.so)

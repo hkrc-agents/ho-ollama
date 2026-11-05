@@ -9,13 +9,6 @@ function(pico_link_runner_compat)
         # existing async-signal-safe fork/exec + exec-error-pipe fallback.
         target_compile_definitions(sheredom INTERFACE SUBPROCESS_SPAWN_VIA_FORK=1)
     endif()
-    if(PICO_OHOS_SYSTEM_TLS)
-        if(NOT CMAKE_SYSTEM_NAME STREQUAL "OHOS" OR NOT TARGET llama-common)
-            message(FATAL_ERROR "System TLS adapter requires the OHOS common target")
-        endif()
-        target_compile_definitions(llama-common PUBLIC PICO_OHOS_SYSTEM_TLS=1)
-        target_link_libraries(llama-common PUBLIC net_ssl)
-    endif()
     # Release test executables must retain their upstream assert() checks.
     # Apply only to tests, not to the production libraries' optimization flags.
     if(LLAMA_BUILD_TESTS)

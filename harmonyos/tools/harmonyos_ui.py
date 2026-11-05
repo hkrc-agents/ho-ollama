@@ -7,9 +7,11 @@ import subprocess
 import time
 
 class HarmonyUI:
-    def __init__(self, evidence, target='127.0.0.1:5555', server=None):
+    def __init__(self, evidence, target, server=None):
         self.evidence = Path(evidence)
         self.evidence.mkdir(parents=True, exist_ok=True)
+        if not isinstance(target, str) or not target or "\0" in target:
+            raise ValueError("Explicit HDC target required")
         self.target = target
         if server is not None and (not re.fullmatch(r'(?:127\.0\.0\.1|::ffff:127\.0\.0\.1):[0-9]{1,5}',server)
                                    or not 1024<int(server.rsplit(':',1)[1])<=65535):
