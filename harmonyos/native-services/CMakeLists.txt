@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.16)
+project(PicoNativeServices LANGUAGES CXX)
+
+find_package(Threads REQUIRED)
+add_library(pico_service_registry STATIC registry.cpp control_server.cpp supervisor.cpp)
+set_target_properties(pico_service_registry PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_compile_features(pico_service_registry PUBLIC cxx_std_17)
+target_include_directories(pico_service_registry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(pico_service_registry PRIVATE -Wall -Wextra -Werror)
+target_link_libraries(pico_service_registry PUBLIC Threads::Threads)
+
+# Default host builds do not pull any AbilityKit header or OHOS runtime library.
+if(CMAKE_SYSTEM_NAME STREQUAL "OHOS")
+  add_library(pico_service_ohos STATIC ohos_platform.cpp)
+  set_target_properties(pico_service_ohos PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_compile_features(pico_service_ohos PUBLIC cxx_std_17)
+  target_compile_options(pico_service_ohos PRIVATE -Wall -Wextra -Werror)
+  target_link_libraries(pico_service_ohos PUBLIC pico_service_registry libchild_process.so)
+endif()
+
+include(CTest)
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+  find_package(Threads REQUIRED)
+  add_executable(pico_service_registry_tests tests/registry_test.cpp)
+  target_link_libraries(pico_service_registry_tests PRIVATE pico_service_registry Threads::Threads)
+  # Assertions remain active even in Release verification.
+  target_compile_options(pico_service_registry_tests PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+  add_test(NAME native-service-registry COMMAND pico_service_registry_tests)
+  set_tests_properties(native-service-registry PROPERTIES TIMEOUT 30)
+  add_executable(pico_service_control_fixture tests/control_fixture.cpp)
+  target_link_libraries(pico_service_control_fixture PRIVATE pico_service_registry Threads::Threads)
+  target_compile_options(pico_service_control_fixture PRIVATE -Wall -Wextra -Werror -UNDEBUG)
+endif()

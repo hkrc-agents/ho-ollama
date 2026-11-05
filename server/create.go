@@ -502,8 +502,10 @@ func linkOrCopyFile(ctx context.Context, src, dst string) error {
 	if err := os.Link(src, dst); err == nil {
 		return nil
 	}
-	if err := os.Symlink(src, dst); err == nil {
-		return nil
+	if !disableStagingSymlinks {
+		if err := os.Symlink(src, dst); err == nil {
+			return nil
+		}
 	}
 
 	in, err := os.Open(src)

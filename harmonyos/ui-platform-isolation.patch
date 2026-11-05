@@ -1,0 +1,26 @@
+diff --git a/app/ui/app/src/lib/platform.ts b/app/ui/app/src/lib/platform.ts
+--- a/app/ui/app/src/lib/platform.ts
++++ b/app/ui/app/src/lib/platform.ts
+@@ -26,0 +27,7 @@
++
++// Preserve the upstream non-Windows UI on every other platform, including
++// browser-based Linux development. Only HarmonyOS lacks this integration.
++export function supportsDesktopIntegrations(): boolean {
++  return !(typeof window !== "undefined" && window.OLLAMA_PLATFORM === "harmonyos")
++    && !isWindowsPlatform();
++}
+diff --git a/app/ui/app/src/components/Settings.tsx b/app/ui/app/src/components/Settings.tsx
+--- a/app/ui/app/src/components/Settings.tsx
++++ b/app/ui/app/src/components/Settings.tsx
+@@ -30 +30 @@
+-import { isMacOSPlatform } from "@/lib/platform";
++import { supportsDesktopIntegrations } from "@/lib/platform";
+@@ -489 +489 @@
+-  const isMacOS = isMacOSPlatform();
++  const isMacOS = supportsDesktopIntegrations();
+diff --git a/app/ui/app/src/components/Settings.interaction.test.tsx b/app/ui/app/src/components/Settings.interaction.test.tsx
+--- a/app/ui/app/src/components/Settings.interaction.test.tsx
++++ b/app/ui/app/src/components/Settings.interaction.test.tsx
+@@ -76 +76 @@
+-  isMacOSPlatform: () => !mocks.isWindows,
++  supportsDesktopIntegrations: () => !mocks.isWindows,

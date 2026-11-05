@@ -1,0 +1,23 @@
+{
+  "ollama": {
+    "repository": "https://github.com/ollama/ollama.git",
+    "commit": "8a971df3bacec93944ec894f2939fd2567afc5dd",
+    "go": "1.26.0"
+  },
+  "runner": {
+    "repository": "https://github.com/ggml-org/llama.cpp.git",
+    "commit": "631109b34da437a3c4a5ebd75091d677671392e3",
+    "tag": "b11351"
+  },
+  "initial_target": "OHOS x86_64 emulator",
+  "platform_patches": [
+    "harmonyos/manifest-copy.patch",
+    "ho-llama.cpp:harmonyos/llama-affinity.patch"
+  ],
+  "downstream": {
+    "ollama": "https://github.com/hkrc-agents/ho-ollama",
+    "runner": "https://github.com/hkrc-agents/ho-llama.cpp",
+    "branch": "harmonyos",
+    "scope": "CPU-only; no fused NPU model"
+  }
+}

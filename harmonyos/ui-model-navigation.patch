@@ -1,0 +1,15 @@
+diff --git a/app/ui/app/src/components/AppSidebar.tsx b/app/ui/app/src/components/AppSidebar.tsx
+--- a/app/ui/app/src/components/AppSidebar.tsx
++++ b/app/ui/app/src/components/AppSidebar.tsx
+@@ -5,1 +5,1 @@
+-type AppSection = "apps" | "chat" | "settings";
++type AppSection = "apps" | "chat" | "settings" | "models";
+@@ -7,1 +7,2 @@
+ export function AppNavigation({ current }: { current: AppSection }) {
++  const harmony = typeof window !== "undefined" && window.OLLAMA_PLATFORM === "harmonyos";
+@@ -16,1 +17,1 @@
+-      <Link to="/connect" className={itemClass("apps")} draggable={false}>
++      <Link to={harmony ? "/models" : "/connect"} className={itemClass(harmony ? "models" : "apps")} draggable={false}>
+@@ -18,1 +19,1 @@
+-        <span className="truncate">Apps</span>
++        <span className="truncate">{harmony ? "Models" : "Apps"}</span>

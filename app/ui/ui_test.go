@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 package ui
 
@@ -186,7 +186,17 @@ func TestGetIntegrationStatuses(t *testing.T) {
 	if _, ok := byID["chatgpt"]; ok {
 		t.Fatal("ChatGPT should be excluded from onboarding integrations")
 	}
-	wantCount := len(launch.ListIntegrationInfos()) + 1 // Claude Desktop and Terminal replace omitted ChatGPT.
+	wantCount := 2 // Claude Desktop and Terminal are not launcher registry entries.
+	for _, info := range launch.ListIntegrationInfos() {
+		if info.Name == "chatgpt" {
+			continue
+		}
+		wantCount++
+		item, ok := byID[info.Name]
+		if !ok || item.Action != "copy" || item.Command != "ollama launch "+info.Name {
+			t.Errorf("missing or invalid launcher integration %q: %+v", info.Name, item)
+		}
+	}
 	if len(got) != wantCount {
 		t.Fatalf("got %d integrations, want %d launcher entries", len(got), wantCount)
 	}

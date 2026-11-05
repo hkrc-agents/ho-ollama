@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 package updater
 
@@ -345,7 +345,17 @@ func TestBackgroundCheckerSkipsAlreadyStagedETagDownload(t *testing.T) {
 	}
 }
 
+// Transport tests use a mock release, not the platform's production installer.
+// Restore the default only after each test's deferred checker shutdown/drain.
+func useTestInstaller(t *testing.T) {
+	t.Helper()
+	oldInstaller := Installer
+	Installer = "Ollama-test.zip"
+	t.Cleanup(func() { Installer = oldInstaller })
+}
+
 func TestBackgoundChecker(t *testing.T) {
+	useTestInstaller(t)
 	UpdateStageDir = t.TempDir()
 	haveUpdate := false
 	verified := false
@@ -419,6 +429,7 @@ func TestBackgoundChecker(t *testing.T) {
 }
 
 func TestAutoUpdateDisabledSkipsDownload(t *testing.T) {
+	useTestInstaller(t)
 	UpdateStageDir = t.TempDir()
 	var downloadAttempted atomic.Bool
 	done := make(chan struct{})
@@ -480,6 +491,7 @@ func TestAutoUpdateDisabledSkipsDownload(t *testing.T) {
 }
 
 func TestAutoUpdateReenabledDownloadsUpdate(t *testing.T) {
+	useTestInstaller(t)
 	UpdateStageDir = t.TempDir()
 	var downloadAttempted atomic.Bool
 	callbackCalled := make(chan struct{}, 1)
@@ -559,6 +571,7 @@ func TestAutoUpdateReenabledDownloadsUpdate(t *testing.T) {
 }
 
 func TestCancelOngoingDownload(t *testing.T) {
+	useTestInstaller(t)
 	UpdateStageDir = t.TempDir()
 	downloadStarted := make(chan struct{})
 	downloadCancelled := make(chan struct{})
@@ -631,6 +644,7 @@ func TestCancelOngoingDownload(t *testing.T) {
 }
 
 func TestTriggerImmediateCheck(t *testing.T) {
+	useTestInstaller(t)
 	UpdateStageDir = t.TempDir()
 	checkCount := atomic.Int32{}
 	checkDone := make(chan struct{}, 10)

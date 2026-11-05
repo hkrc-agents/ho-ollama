@@ -73,6 +73,7 @@ vi.mock("@/hooks/useCloudStatus", () => ({
 
 vi.mock("@/lib/platform", () => ({
   isWindowsPlatform: () => mocks.isWindows,
+  supportsDesktopIntegrations: () => !mocks.isWindows,
 }));
 
 vi.mock("@tanstack/react-router", () => ({

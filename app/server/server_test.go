@@ -1,9 +1,10 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 package server
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,6 +31,9 @@ func TestNew(t *testing.T) {
 }
 
 func TestServerCmd(t *testing.T) {
+	fixtureHome := t.TempDir()
+	t.Setenv("HOME", fixtureHome)
+	t.Setenv("USERPROFILE", fixtureHome)
 	os.Unsetenv("OLLAMA_HOST")
 	os.Unsetenv("OLLAMA_ORIGINS")
 	os.Unsetenv("OLLAMA_MODELS")
@@ -104,6 +108,10 @@ func TestServerCmd(t *testing.T) {
 			}
 
 			cmd, err := s.cmd(t.Context())
+			if platformStrictModelDirectory && tt.name == "inaccessible_models" {
+				if !errors.Is(err, os.ErrNotExist) || cmd != nil { t.Fatalf("expected no fallback command: cmd=%v err=%v", cmd, err) }
+				return
+			}
 			if err != nil {
 				t.Fatalf("s.cmd() error = %v", err)
 			}
@@ -169,6 +177,7 @@ func TestServerCmdCloudSettingEnv(t *testing.T) {
 			tmpHome := t.TempDir()
 			t.Setenv("HOME", tmpHome)
 			t.Setenv("USERPROFILE", tmpHome)
+			if err := os.MkdirAll(filepath.Join(tmpHome, ".ollama", "models"), 0700); err != nil { t.Fatal(err) }
 			t.Setenv("OLLAMA_NO_CLOUD", tt.envValue)
 
 			if tt.configContent != "" {

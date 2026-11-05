@@ -34,7 +34,7 @@ type config struct {
 }
 
 func NeedsWelcome() (bool, error) {
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && onboarding.AppDatabasePath() == "" {
 		return needsWelcomeInConfig()
 	}
 	state := onboarding.State{}
@@ -53,7 +53,7 @@ func NeedsWelcome() (bool, error) {
 }
 
 func CompleteWelcome() error {
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == "linux" && onboarding.AppDatabasePath() == "" {
 		return completeWelcomeInConfig()
 	}
 	return (onboarding.State{}).Complete()

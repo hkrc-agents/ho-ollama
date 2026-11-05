@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+/build/
+/out/
+*.hap
+*.hnp
+*.p12
+*.pfx
+*.key
+*.pem
+local.properties

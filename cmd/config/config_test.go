@@ -26,11 +26,11 @@ func TestWelcomeStorage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	linux := runtime.GOOS == "linux"
-	if (cfg.OnboardingVersion == onboarding.CurrentVersion) != linux {
+	configStorage := runtime.GOOS == "linux" && onboarding.AppDatabasePath() == ""
+	if (cfg.OnboardingVersion == onboarding.CurrentVersion) != configStorage {
 		t.Fatalf("unexpected config completion on %s: %d", runtime.GOOS, cfg.OnboardingVersion)
 	}
-	if marked, err := (onboarding.State{}).Completed(); err != nil || marked == linux {
+	if marked, err := (onboarding.State{}).Completed(); err != nil || marked == configStorage {
 		t.Fatalf("unexpected marker on %s: completed=%v err=%v", runtime.GOOS, marked, err)
 	}
 }

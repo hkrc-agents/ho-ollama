@@ -1,0 +1,92 @@
+diff --git a/app/ui/ui_test.go b/app/ui/ui_test.go
+--- a/app/ui/ui_test.go
++++ b/app/ui/ui_test.go
+@@ -186,7 +186,17 @@ func TestGetIntegrationStatuses(t *testing.T) {
+ 	if _, ok := byID["chatgpt"]; ok {
+ 		t.Fatal("ChatGPT should be excluded from onboarding integrations")
+ 	}
+-	wantCount := len(launch.ListIntegrationInfos()) + 1 // Claude Desktop and Terminal replace omitted ChatGPT.
++	wantCount := 2 // Claude Desktop and Terminal are not launcher registry entries.
++	for _, info := range launch.ListIntegrationInfos() {
++		if info.Name == "chatgpt" {
++			continue
++		}
++		wantCount++
++		item, ok := byID[info.Name]
++		if !ok || item.Action != "copy" || item.Command != "ollama launch "+info.Name {
++			t.Errorf("missing or invalid launcher integration %q: %+v", info.Name, item)
++		}
++	}
+ 	if len(got) != wantCount {
+ 		t.Fatalf("got %d integrations, want %d launcher entries", len(got), wantCount)
+ 	}
+diff --git a/cmd/config/config_test.go b/cmd/config/config_test.go
+--- a/cmd/config/config_test.go
++++ b/cmd/config/config_test.go
+@@ -26,11 +26,11 @@ func TestWelcomeStorage(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	linux := runtime.GOOS == "linux"
+-	if (cfg.OnboardingVersion == onboarding.CurrentVersion) != linux {
++	configStorage := runtime.GOOS == "linux" && onboarding.AppDatabasePath() == ""
++	if (cfg.OnboardingVersion == onboarding.CurrentVersion) != configStorage {
+ 		t.Fatalf("unexpected config completion on %s: %d", runtime.GOOS, cfg.OnboardingVersion)
+ 	}
+-	if marked, err := (onboarding.State{}).Completed(); err != nil || marked == linux {
++	if marked, err := (onboarding.State{}).Completed(); err != nil || marked == configStorage {
+ 		t.Fatalf("unexpected marker on %s: completed=%v err=%v", runtime.GOOS, marked, err)
+ 	}
+ }
+diff --git a/app/updater/updater_test.go b/app/updater/updater_test.go
+--- a/app/updater/updater_test.go
++++ b/app/updater/updater_test.go
+@@ -341,7 +341,17 @@ func TestDownloadNewReleaseAlreadyStagedUpdateKeepsVerifiedState(t *testing.T) {
+ 	}
+ }
+ 
++// Transport tests use a mock release, not the platform's production installer.
++// Restore the default only after each test's deferred checker shutdown/drain.
++func useTestInstaller(t *testing.T) {
++	t.Helper()
++	oldInstaller := Installer
++	Installer = "Ollama-test.zip"
++	t.Cleanup(func() { Installer = oldInstaller })
++}
++
+ func TestBackgoundChecker(t *testing.T) {
++	useTestInstaller(t)
+ 	UpdateStageDir = t.TempDir()
+ 	haveUpdate := false
+ 	verified := false
+@@ -420,6 +430,7 @@ func TestBackgoundChecker(t *testing.T) {
+ }
+ 
+ func TestAutoUpdateDisabledSkipsDownload(t *testing.T) {
++	useTestInstaller(t)
+ 	UpdateStageDir = t.TempDir()
+ 	var downloadAttempted atomic.Bool
+ 	done := make(chan struct{})
+@@ -480,6 +491,7 @@ func TestAutoUpdateDisabledSkipsDownload(t *testing.T) {
+ }
+ 
+ func TestAutoUpdateReenabledDownloadsUpdate(t *testing.T) {
++	useTestInstaller(t)
+ 	UpdateStageDir = t.TempDir()
+ 	var downloadAttempted atomic.Bool
+ 	callbackCalled := make(chan struct{}, 1)
+@@ -561,6 +573,7 @@ func TestAutoUpdateReenabledDownloadsUpdate(t *testing.T) {
+ }
+ 
+ func TestCancelOngoingDownload(t *testing.T) {
++	useTestInstaller(t)
+ 	UpdateStageDir = t.TempDir()
+ 	downloadStarted := make(chan struct{})
+@@ -638,6 +651,7 @@ func TestCancelOngoingDownload(t *testing.T) {
+ }
+ 
+ func TestTriggerImmediateCheck(t *testing.T) {
++	useTestInstaller(t)
+ 	UpdateStageDir = t.TempDir()
+ 	checkCount := atomic.Int32{}
+ 	checkDone := make(chan struct{}, 10)

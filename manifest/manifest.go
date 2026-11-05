@@ -1248,6 +1248,10 @@ func linkManifest(name model.Name, digest string) error {
 		return err
 	}
 
+	if manifestCopyOnly {
+		return copyManifestFile(blobPath, manifestPath)
+	}
+
 	if rel, err := filepath.Rel(filepath.Dir(manifestPath), blobPath); err == nil {
 		tempName, err := tempManifestPath(filepath.Dir(manifestPath))
 		if err != nil {

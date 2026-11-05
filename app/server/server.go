@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 package server
 
@@ -209,7 +209,8 @@ func (s *Server) Run(ctx context.Context) error {
 			slog.Warn("failed to write pid file", "file", pidFile, "err", err)
 		}
 
-		if err = cmd.Wait(); err != nil && !errors.Is(err, context.Canceled) {
+		if err = platformCoreWait(cmd); err != nil && !errors.Is(err, context.Canceled) {
+			if !platformCoreMayRestart(err) { return err }
 			var exitErr *exec.ExitError
 			if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 && !s.dev && !reaped {
 				reaped = true
@@ -239,7 +240,7 @@ func (s *Server) cmd(ctx context.Context) (*exec.Cmd, error) {
 	}
 
 	cmd := commandContext(ctx, s.bin, "serve")
-	cmd.Stdout, cmd.Stderr = s.log, s.log
+	cmd.Stdout, cmd.Stderr = platformCoreOutput(cmd, s.log)
 
 	// Copy and mutate the environment to merge in settings the user has specified without dups
 	env := map[string]string{}
@@ -254,11 +255,9 @@ func (s *Server) cmd(ctx context.Context) (*exec.Cmd, error) {
 		env["OLLAMA_ORIGINS"] = "*"
 	}
 	if settings.Models != "" {
-		if _, err := os.Stat(settings.Models); err == nil {
-			env["OLLAMA_MODELS"] = settings.Models
-		} else {
-			slog.Warn("models path not accessible, using default", "path", settings.Models, "err", err)
-		}
+		models, err := platformModelsDirectory(settings.Models)
+		if err != nil { return nil, err }
+		if models != "" { env["OLLAMA_MODELS"] = models }
 	}
 	if settings.ContextLength > 0 {
 		env["OLLAMA_CONTEXT_LENGTH"] = strconv.Itoa(settings.ContextLength)

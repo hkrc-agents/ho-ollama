@@ -1,3 +1,7 @@
+> **HarmonyOS downstream: [ho-ollama](https://github.com/hkrc-agents/ho-ollama).**
+> Start with [HARMONYOS.md](HARMONYOS.md) for CPU builds, packaging and qualification status.
+> This is a community fork, not an official upstream release.
+
 <p align="center">
   <a href="https://ollama.com">
     <img src="https://github.com/ollama/ollama/assets/3325447/0d0b44e2-8f4a-4e99-9b52-a5c1c741c8f7" alt="ollama" width="200"/>

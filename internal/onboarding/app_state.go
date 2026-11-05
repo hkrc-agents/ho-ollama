@@ -32,7 +32,7 @@ func AppDatabasePath() string {
 	case runtime.GOOS == "windows" && localAppData != "":
 		return filepath.Join(localAppData, "Ollama", "db.sqlite")
 	default:
-		return ""
+		return platformAppDatabasePath(home)
 	}
 }
 

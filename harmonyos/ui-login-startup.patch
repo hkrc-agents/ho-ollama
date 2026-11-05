@@ -1,0 +1,17 @@
+diff --git a/app/ui/app/src/components/Settings.tsx b/app/ui/app/src/components/Settings.tsx
+--- a/app/ui/app/src/components/Settings.tsx
++++ b/app/ui/app/src/components/Settings.tsx
+@@ -496,1 +496,13 @@
++          {isHarmonyOS && (
++            <div className="overflow-hidden rounded-xl bg-white dark:bg-neutral-800 p-4">
++              <Field>
++                <Label>Start Ollama at login</Label>
++                <Description>Managed by HarmonyOS system settings. Check the actual system status before enabling.</Description>
++                <Button type="button" color="white"
++                  onClick={() => { window.location.href = "harmony-ollama://login-startup"; }}>
++                  Manage login startup
++                </Button>
++              </Field>
++            </div>
++          )}
+           {/* Connect Ollama Account */}

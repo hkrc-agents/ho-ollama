@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-04",
+  "scope": "Independent HarmonyOS x86_64 CPU builds and host tests; no NPU integration or device deployment",
+  "upstream_base": "8a971df3bacec93944ec894f2939fd2567afc5dd",
+  "runner_base": "631109b34da437a3c4a5ebd75091d677671392e3",
+  "frontend": {
+    "success": true,
+    "numTotalTests": 279,
+    "numPassedTests": 279,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "app_server_race": {
+    "pass": 319
+  },
+  "portable_contract_tests": 22,
+  "native_services": {
+    "release_cases": 24,
+    "asan_cases": 24,
+    "go_parent_cases": 14,
+    "go_child_cases": 21,
+    "ohos_object_sha256": {
+      "control_server.cpp.o": "de32055ebc9f40ca50c3abaff4008fa6681af1b55b074677ba614c20cd43b8c6",
+      "registry.cpp.o": "50d75d7fd16715d6278ca21d5390bca91d7991086fd76075ffed9f5a838ebd42",
+      "ohos_platform.cpp.o": "dd06e95106a39fa4ee4b841aacb24a39f9262221a91a9cf351ea67e7d4a26f3e",
+      "supervisor.cpp.o": "585aabb64ff48f17643eb727fbda4eeef6887a21e12510c3ef3b20f2720c4cae"
+    }
+  },
+  "runtime": {
+    "arch": "x86_64",
+    "files": {
+      "LLAMA_CPP_LICENSE": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "OLLAMA_LICENSE": "5934ed2ce0d15154bcdb9c85203210abac0da4314af34081e36df4599f90b226",
+      "lib/libc++_shared.so": "4a8842e780cdf0ef692d75af60f4a33483e667ff5d8546632bf8015f2d55e004",
+      "lib/ollama/llama-server": "c3e6f2f29a4105029f55922248f86f1baa7481fde4907ac044b9b595ccd6894d",
+      "bin/llama-cli": "d3e2b4012fac5b4165f61067b967bdb94a239dbf0ce4bf541a145650083ad50f",
+      "bin/llama-simple": "7c6f50d88af06d689544556fb37340c45c004a95362cde1da55c6bce1dafcf08",
+      "bin/llama-quantize": "039ad9fecdecf0cbd1a755e693fdf34706db67d0bfc274275fdc002943fe5aa4",
+      "bin/llama-bench": "ce91df8b487678f97b211ee36ea7191665585e457b0de9ab5697b24adb683f0b",
+      "bin/ollama": "ab7f6bde57f1c83c95673f87b6ea3002e89b743a32b03c3cd33e060fd35d8aba",
+      "licenses/vendor/cpp-httplib/LICENSE": "4b45cbe16d7b71b89ae6127e26e0d90a029198ca5e958ad8e3d0b8bbed364d8b",
+      "licenses/vendor/hash/sha256/LICENSE": "b81d0022ca6367918c67b57e9647d3513ee58809fd4b0ef0b3492f1356bced25",
+      "licenses/vendor/hash/xxhash/LICENSE": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a",
+      "licenses/vendor/hash/rotate-bits/LICENSE.md": "ca0b44aec101afb6b46f4c39b23369fa06a64fb9c0add37c2689d702156fee55"
+    },
+    "features": {
+      "tls_libressl": false,
+      "subprocess_router": false,
+      "experimental_system_tls": false,
+      "ohos_ca_store": false
+    }
+  },
+  "app_payload": {
+    "LLAMA_CPP_LICENSE": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+    "OLLAMA_LICENSE": "5934ed2ce0d15154bcdb9c85203210abac0da4314af34081e36df4599f90b226",
+    "bin/llama-bench": "ce91df8b487678f97b211ee36ea7191665585e457b0de9ab5697b24adb683f0b",
+    "bin/llama-cli": "d3e2b4012fac5b4165f61067b967bdb94a239dbf0ce4bf541a145650083ad50f",
+    "bin/llama-quantize": "039ad9fecdecf0cbd1a755e693fdf34706db67d0bfc274275fdc002943fe5aa4",
+    "bin/llama-simple": "7c6f50d88af06d689544556fb37340c45c004a95362cde1da55c6bce1dafcf08",
+    "bin/ollama": "ab7f6bde57f1c83c95673f87b6ea3002e89b743a32b03c3cd33e060fd35d8aba",
+    "bin/ollama-app": "19f046cd3c05739acd4d4a685205290b76c0ef9438e55a18df3816a1178f2d11",
+    "bin/pico-service-launcher": "1373574039939d11615ce15c11b5705aaca72f28795ec179a2d104bc94755f92",
+    "bin/pico-storage-probe": "a898b656aacff9818fe8ad66dcb0edf9be6be5b16840ad138ace2b44ca7dd81d",
+    "lib/libc++_shared.so": "4a8842e780cdf0ef692d75af60f4a33483e667ff5d8546632bf8015f2d55e004",
+    "lib/ollama/llama-server": "c3e6f2f29a4105029f55922248f86f1baa7481fde4907ac044b9b595ccd6894d",
+    "licenses/vendor/cpp-httplib/LICENSE": "4b45cbe16d7b71b89ae6127e26e0d90a029198ca5e958ad8e3d0b8bbed364d8b",
+    "licenses/vendor/hash/rotate-bits/LICENSE.md": "ca0b44aec101afb6b46f4c39b23369fa06a64fb9c0add37c2689d702156fee55",
+    "licenses/vendor/hash/sha256/LICENSE": "b81d0022ca6367918c67b57e9647d3513ee58809fd4b0ef0b3492f1356bced25",
+    "licenses/vendor/hash/xxhash/LICENSE": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a"
+  },
+  "unsigned_hap_sha256": "3ab89865e773125bbc70d6ea72e0b8bff35524031fe1f01b26858659b81f8c6e",
+  "full_package_hap_sha256": "6ef57306e26be9ddca19242117d217b240e648ee4d07db7633ce38e3b51d0cf1",
+  "signed": false,
+  "device_qualified": false
+}

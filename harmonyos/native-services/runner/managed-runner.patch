@@ -1,0 +1,97 @@
+diff --git a/llm/llama_server.go b/llm/llama_server.go
+--- a/llm/llama_server.go
++++ b/llm/llama_server.go
+@@ -126 +126 @@
+-	cmd                *exec.Cmd
++	cmd                *managedRunner
+@@ -215,6 +215,3 @@
+ func (s *llamaServerRunner) Pid() int {
+-	if s.cmd != nil && s.cmd.Process != nil {
+-		return s.cmd.Process.Pid
+-	}
+-	return 0
++	return s.cmd.PID()
+ }
+@@ -227 +224 @@
+-	return s.cmd != nil && s.cmd.ProcessState != nil && s.cmd.ProcessState.ExitCode() >= 0
++	return s.cmd.Exited()
+@@ -343,5 +340,1 @@
+-	path, candidates, err := findLlamaCppBinary("llama-server", defaultLlamaCppBinarySearch())
+-	if err != nil {
+-		return "", fmt.Errorf("llama-server binary not found (checked: %s). Run 'cmake -S llama/server --preset cpu && cmake --build --preset cpu' first", strings.Join(candidates, ", "))
+-	}
+-	return path, nil
++	return findManagedLlamaServer()
+@@ -351 +348 @@
+-func startLlamaServer(launch llamaServerLaunchConfig, out io.Writer) (cmd *exec.Cmd, port int, err error) {
++func startLlamaServer(launch llamaServerLaunchConfig, out io.Writer) (cmd *managedRunner, port int, err error) {
+@@ -425,17 +422,2 @@
+-	// Set up library paths for GPU backend discovery
+-	cmd = exec.Command(exe, params...)
+-
+-	if out != nil {
+-		// os/exec serializes Write calls when stdout and stderr share a writer.
+-		cmd.Stdout = out
+-		cmd.Stderr = out
+-	}
+-	cmd.SysProcAttr = LlamaServerSysProcAttr
+-	SetupLlamaServerCommandEnv(cmd, exe, launch.gpuLibs, launch.extraEnvsForStart())
+-
+-	slog.Info("starting llama-server", "cmd", cmd)
+-	slog.Debug("subprocess", "", filteredEnv(cmd.Env))
+-
+-	if err = cmd.Start(); err != nil {
+-		return nil, 0, err
+-	}
++	cmd, err = launchManagedRunner(exe, params, launch.gpuLibs, launch.extraEnvsForStart(), out)
++	if err != nil { return nil, 0, err }
+@@ -1025 +1007 @@
+-	go func(cmd *exec.Cmd, done chan struct{}) {
++	go func(cmd *managedRunner, done chan struct{}) {
+@@ -1205,7 +1187,3 @@
+-	if s.cmd.ProcessState != nil {
++	if s.cmd.Exited() {
+ 		msg := s.lastErrMsg()
+-		if s.cmd.ProcessState.ExitCode() == -1 {
+-			slog.Warn("llama-server process no longer running", "sys", s.cmd.ProcessState.Sys(), "string", s.cmd.ProcessState)
+-		}
+-		return ServerStatusError, fmt.Errorf("llama-server process no longer running: %s %s", ExitStatus(s.cmd.ProcessState.ExitCode()), msg)
++		return ServerStatusError, fmt.Errorf("managed llama-server no longer running: %s %s", s.cmd.Description(), msg)
+ 	}
+@@ -1320,2 +1298,2 @@
+-				if s.cmd != nil && s.cmd.ProcessState != nil && s.cmd.ProcessState.ExitCode() >= 0 {
+-					return fmt.Errorf("llama-server process has terminated: %s: %s", ExitStatus(s.cmd.ProcessState.ExitCode()), msg)
++				if s.cmd.Exited() {
++					return fmt.Errorf("managed llama-server has terminated: %s: %s", s.cmd.Description(), msg)
+@@ -1329,2 +1307,2 @@
+-				if s.cmd != nil && s.cmd.ProcessState != nil {
+-					return fmt.Errorf("llama-server process has terminated: %s", ExitStatus(s.cmd.ProcessState.ExitCode()))
++				if s.cmd.Exited() {
++					return fmt.Errorf("managed llama-server has terminated: %s", s.cmd.Description())
+@@ -1351,3 +1329,3 @@
+-		if s.cmd.ProcessState != nil {
++		if s.cmd.Exited() {
+ 			msg := s.lastErrMsg()
+-			return fmt.Errorf("llama-server process no longer running: %s %s", ExitStatus(s.cmd.ProcessState.ExitCode()), msg)
++			return fmt.Errorf("managed llama-server no longer running: %s %s", s.cmd.Description(), msg)
+@@ -2682,17 +2660,4 @@
+ func (s *llamaServerRunner) stopProcess() error {
+-	if s.cmd != nil && s.cmd.Process != nil {
+-		if s.cmd.ProcessState != nil {
+-			return nil
+-		}
+-		slog.Debug("stopping llama-server", "pid", s.Pid())
+-		if err := s.cmd.Process.Kill(); err != nil && !errors.Is(err, os.ErrProcessDone) {
+-			return err
+-		}
+-		if s.done != nil {
+-			slog.Debug("waiting for llama-server to exit", "pid", s.Pid())
+-			<-s.done
+-		}
+-		slog.Debug("llama-server stopped", "pid", s.Pid())
+-	}
+-	return nil
++	if err := s.cmd.Stop(); err != nil { return err }
++	if s.done != nil { <-s.done }
++	return nil
+ }

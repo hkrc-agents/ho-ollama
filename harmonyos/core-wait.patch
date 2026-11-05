@@ -1,0 +1,7 @@
+diff --git a/app/server/server.go b/app/server/server.go
+--- a/app/server/server.go
++++ b/app/server/server.go
+@@ -208,1 +208,2 @@
+-		if err = cmd.Wait(); err != nil && !errors.Is(err, context.Canceled) {
++		if err = platformCoreWait(cmd); err != nil && !errors.Is(err, context.Canceled) {
++			if !platformCoreMayRestart(err) { return err }

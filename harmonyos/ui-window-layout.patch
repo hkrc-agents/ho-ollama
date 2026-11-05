@@ -1,0 +1,17 @@
+diff --git a/app/ui/app/src/components/layout/layout.tsx b/app/ui/app/src/components/layout/layout.tsx
+--- a/app/ui/app/src/components/layout/layout.tsx
++++ b/app/ui/app/src/components/layout/layout.tsx
+@@ -3 +3 @@
+-import { isWindowsPlatform } from "@/lib/platform";
++import { usesNativeWindowChrome } from "@/lib/window-layout";
+@@ -17 +17 @@
+-  const isWindows = isWindowsPlatform();
++  const isWindows = usesNativeWindowChrome();
+diff --git a/app/ui/app/src/components/Chat.tsx b/app/ui/app/src/components/Chat.tsx
+--- a/app/ui/app/src/components/Chat.tsx
++++ b/app/ui/app/src/components/Chat.tsx
+@@ -0,0 +1 @@
++import { usesNativeWindowChrome } from "@/lib/window-layout";
+@@ -196 +197 @@
+-  const isWindows = navigator.platform.toLowerCase().includes("win");
++  const isWindows = usesNativeWindowChrome();

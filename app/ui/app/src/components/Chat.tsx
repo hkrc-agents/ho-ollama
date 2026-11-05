@@ -1,3 +1,4 @@
+import { usesNativeWindowChrome } from "@/lib/window-layout";
 import MessageList from "./MessageList";
 import ChatForm from "./ChatForm";
 import { FileUpload } from "./FileUpload";
@@ -193,7 +194,7 @@ export default function Chat({ chatId }: { chatId: string }) {
     );
   };
 
-  const isWindows = navigator.platform.toLowerCase().includes("win");
+  const isWindows = usesNativeWindowChrome();
 
   return chatId === "new" || chatQuery ? (
     <FileUpload

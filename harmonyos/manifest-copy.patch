@@ -1,0 +1,142 @@
+diff --git a/manifest/manifest.go b/manifest/manifest.go
+index 61c8083..517ee8e 100644
+--- a/manifest/manifest.go
++++ b/manifest/manifest.go
+@@ -1248,6 +1248,10 @@ func linkManifest(name model.Name, digest string) error {
+ 		return err
+ 	}
+ 
++	if manifestCopyOnly {
++		return copyManifestFile(blobPath, manifestPath)
++	}
++
+ 	if rel, err := filepath.Rel(filepath.Dir(manifestPath), blobPath); err == nil {
+ 		tempName, err := tempManifestPath(filepath.Dir(manifestPath))
+ 		if err != nil {
+diff --git a/server/create.go b/server/create.go
+index 2a054fe..9690b7f 100644
+--- a/server/create.go
++++ b/server/create.go
+@@ -502,8 +502,10 @@ func linkOrCopyFile(ctx context.Context, src, dst string) error {
+ 	if err := os.Link(src, dst); err == nil {
+ 		return nil
+ 	}
+-	if err := os.Symlink(src, dst); err == nil {
+-		return nil
++	if !disableStagingSymlinks {
++		if err := os.Symlink(src, dst); err == nil {
++			return nil
++		}
+ 	}
+ 
+ 	in, err := os.Open(src)
+diff --git a/manifest/copy_policy_default.go b/manifest/copy_policy_default.go
+new file mode 100644
+index 0000000..d04a2bc
+--- /dev/null
++++ b/manifest/copy_policy_default.go
+@@ -0,0 +1,5 @@
++//go:build !harmonyos
++
++package manifest
++
++const manifestCopyOnly = false
+diff --git a/manifest/copy_policy_harmony.go b/manifest/copy_policy_harmony.go
+new file mode 100644
+index 0000000..b8f52b5
+--- /dev/null
++++ b/manifest/copy_policy_harmony.go
+@@ -0,0 +1,7 @@
++//go:build harmonyos
++
++package manifest
++
++// HarmonyOS application sandboxes may reject symlink creation. Keep the
++// upstream verified-blob and atomic ordinary-file replacement path.
++const manifestCopyOnly = true
+diff --git a/manifest/copy_policy_harmony_test.go b/manifest/copy_policy_harmony_test.go
+new file mode 100644
+index 0000000..5990e08
+--- /dev/null
++++ b/manifest/copy_policy_harmony_test.go
+@@ -0,0 +1,58 @@
++//go:build harmonyos
++
++package manifest
++
++import (
++	"bytes"
++	"github.com/ollama/ollama/types/model"
++	"os"
++	"testing"
++)
++
++func TestHarmonyManifestCopyLifecycle(t *testing.T) {
++	t.Setenv("OLLAMA_MODELS", t.TempDir())
++	name := model.ParseName("example")
++	path, err := V2PathForName(name)
++	if err != nil {
++		t.Fatal(err)
++	}
++	for _, data := range [][]byte{[]byte(`{"schemaVersion":2}`), []byte(`{"schemaVersion":2,"layers":[]}`)} {
++		digest, err := writeManifestBlob(data)
++		if err != nil {
++			t.Fatal(err)
++		}
++		if err := linkManifest(name, digest); err != nil {
++			t.Fatal(err)
++		}
++		st, err := os.Lstat(path)
++		if err != nil || !st.Mode().IsRegular() {
++			t.Fatalf("not a regular manifest: %v", err)
++		}
++		got, err := os.ReadFile(path)
++		if err != nil || !bytes.Equal(got, data) {
++			t.Fatalf("content mismatch: %v", err)
++		}
++		resolved, err := ResolvePathForName(name)
++		if err != nil || resolved != path {
++			t.Fatalf("resolve: %q %v", resolved, err)
++		}
++		blob, err := BlobsPath(digest)
++		if err != nil {
++			t.Fatal(err)
++		}
++		// Ordinary-file copy must remain readable without the source blob.
++		if err := os.Remove(blob); err != nil {
++			t.Fatal(err)
++		}
++		got, err = os.ReadFile(path)
++		if err != nil || !bytes.Equal(got, data) {
++			t.Fatalf("copy depends on blob: %v", err)
++		}
++	}
++	if err := os.Remove(path); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := ResolvePathForName(name); !os.IsNotExist(err) {
++		t.Fatalf("after removal: %v", err)
++	}
++}
+diff --git a/server/symlink_policy_default.go b/server/symlink_policy_default.go
+new file mode 100644
+index 0000000..3b04c5c
+--- /dev/null
++++ b/server/symlink_policy_default.go
+@@ -0,0 +1,5 @@
++//go:build !harmonyos
++
++package server
++
++const disableStagingSymlinks = false
+diff --git a/server/symlink_policy_harmony.go b/server/symlink_policy_harmony.go
+new file mode 100644
+index 0000000..13de2fa
+--- /dev/null
++++ b/server/symlink_policy_harmony.go
+@@ -0,0 +1,5 @@
++//go:build harmonyos
++
++package server
++
++const disableStagingSymlinks = true

@@ -1,0 +1,20 @@
+diff --git a/app/server/server_test.go b/app/server/server_test.go
+--- a/app/server/server_test.go
++++ b/app/server/server_test.go
+@@ -6,1 +6,2 @@
+ 	"context"
++	"errors"
+@@ -32,1 +33,4 @@
+ func TestServerCmd(t *testing.T) {
++	fixtureHome := t.TempDir()
++	t.Setenv("HOME", fixtureHome)
++	t.Setenv("USERPROFILE", fixtureHome)
+@@ -106,1 +110,5 @@
+ 			cmd, err := s.cmd(t.Context())
++			if platformStrictModelDirectory && tt.name == "inaccessible_models" {
++				if !errors.Is(err, os.ErrNotExist) || cmd != nil { t.Fatalf("expected no fallback command: cmd=%v err=%v", cmd, err) }
++				return
++			}
+@@ -168,1 +176,2 @@
+ 			t.Setenv("USERPROFILE", tmpHome)
++			if err := os.MkdirAll(filepath.Join(tmpHome, ".ollama", "models"), 0700); err != nil { t.Fatal(err) }

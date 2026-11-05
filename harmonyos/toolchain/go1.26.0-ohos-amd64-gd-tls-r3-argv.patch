@@ -1,0 +1,79 @@
+# R3 incremental runtime argv fix; apply after go1.26.0-ohos-amd64-gd-tls.patch (R2).
+# Private opt-in Linux/amd64 library experiment. Preserve Go BSD-3-Clause notices.
+--- a/src/runtime/runtime1.go
++++ b/src/runtime/runtime1.go
+@@ -72,7 +72,7 @@
+ 
+ func goargs() {
+ 	if picoOhosDynamicTLS && (islibrary || isarchive) {
+-		argslice = make([]string, 0)
++		goargsPicoLibrary()
+ 		return
+ 	}
+ 	if GOOS == "windows" {
+--- a/src/runtime/pico_ohos_dynamic_tls_linux_amd64.go
++++ b/src/runtime/pico_ohos_dynamic_tls_linux_amd64.go
+@@ -6,5 +6,54 @@
+ 
+ package runtime
+ 
++import "unsafe"
++
+ // Explicit experimental opt-in. No change to ordinary Go executables or SOs.
+ const picoOhosDynamicTLS = true
++
++var picoProcCmdline = []byte("/proc/self/cmdline\x00")
++
++func goargsPicoLibrary() {
++	// Non-glibc constructors need not supply argc/argv. Read process argv,
++	// never those constructor registers. This is host identity, not the
++	// application's package executable or its eventual exported-entry argv.
++	argslice = []string{"pico-go-so"}
++	fd := open(&picoProcCmdline[0], 0, 0)
++	if fd < 0 {
++		return
++	}
++	var chunk [4096]byte
++	var data []byte
++	for {
++		n := read(fd, noescape(unsafe.Pointer(&chunk[0])), int32(len(chunk)))
++		if n == -_EINTR {
++			continue
++		}
++		if n < 0 || len(data)+int(n) > 1<<20 {
++			closefd(fd)
++			return // Unreadable/oversized argv keeps the nonempty fallback.
++		}
++		if n == 0 {
++			break
++		}
++		data = append(data, chunk[:n]...)
++	}
++	closefd(fd)
++	var parsed []string
++	start := 0
++	for i, b := range data {
++		if b == 0 {
++			parsed = append(parsed, string(data[start:i]))
++			start = i + 1
++		}
++	}
++	if start < len(data) {
++		parsed = append(parsed, string(data[start:]))
++	}
++	if len(parsed) != 0 {
++		if parsed[0] == "" {
++			parsed[0] = "pico-go-so"
++		}
++		argslice = parsed // Strings own copies, independent of the read buffer.
++	}
++}
+--- a/src/runtime/pico_ohos_dynamic_tls_off.go
++++ b/src/runtime/pico_ohos_dynamic_tls_off.go
+@@ -7,3 +7,6 @@
+ package runtime
+ 
+ const picoOhosDynamicTLS = false
++
++// Unreachable without the opt-in Linux/amd64 library guard.
++func goargsPicoLibrary() {}

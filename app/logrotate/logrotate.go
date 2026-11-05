@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 // package logrotate provides utilities for rotating logs
 // TODO (jmorgan): this most likely doesn't need it's own

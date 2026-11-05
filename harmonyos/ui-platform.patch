@@ -1,0 +1,47 @@
+diff --git a/app/ui/app/src/lib/platform.ts b/app/ui/app/src/lib/platform.ts
+--- a/app/ui/app/src/lib/platform.ts
++++ b/app/ui/app/src/lib/platform.ts
+@@ -12,3 +12,14 @@ export function isWindowsPlatform(): boolean {
+     navigator.platform.toLowerCase().includes("win")
+   );
+ }
++
++// Desktop integrations require macOS capabilities, not merely "not Windows".
++export function isMacOSPlatform(): boolean {
++  if (typeof window !== "undefined" && window.OLLAMA_PLATFORM) {
++    return window.OLLAMA_PLATFORM === "darwin";
++  }
++  return (
++    typeof navigator !== "undefined" &&
++    navigator.platform.toLowerCase().includes("mac")
++  );
++}
+diff --git a/app/ui/app/src/types/webview.d.ts b/app/ui/app/src/types/webview.d.ts
+--- a/app/ui/app/src/types/webview.d.ts
++++ b/app/ui/app/src/types/webview.d.ts
+@@ -172,1 +172,1 @@
+-    OLLAMA_PLATFORM?: "darwin" | "windows";
++    OLLAMA_PLATFORM?: "darwin" | "windows" | "harmonyos";
+diff --git a/app/ui/app/src/components/Settings.tsx b/app/ui/app/src/components/Settings.tsx
+--- a/app/ui/app/src/components/Settings.tsx
++++ b/app/ui/app/src/components/Settings.tsx
+@@ -29,1 +29,1 @@
+-import { isWindowsPlatform } from "@/lib/platform";
++import { isMacOSPlatform } from "@/lib/platform";
+@@ -485,1 +485,1 @@
+-  const isWindows = isWindowsPlatform();
++  const isMacOS = isMacOSPlatform();
+@@ -632,1 +632,1 @@
+-              {!isWindows && (
++              {isMacOS && (
+@@ -779,1 +779,1 @@
+-          {!isWindows && (
++          {isMacOS && (
+diff --git a/app/ui/app/src/components/Settings.interaction.test.tsx b/app/ui/app/src/components/Settings.interaction.test.tsx
+--- a/app/ui/app/src/components/Settings.interaction.test.tsx
++++ b/app/ui/app/src/components/Settings.interaction.test.tsx
+@@ -74,3 +74,4 @@
+ vi.mock("@/lib/platform", () => ({
+   isWindowsPlatform: () => mocks.isWindows,
++  isMacOSPlatform: () => !mocks.isWindows,
+ }));

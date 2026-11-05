@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 // package ui implements a chat interface for Ollama
 package ui
@@ -1925,11 +1925,9 @@ func (s *Server) buildChatRequest(chat *store.Chat, model string, think any, ava
 
 	var thinkValue *api.ThinkValue
 	if think != nil {
-		// Only set Think if it's actually requesting thinking
+		// Preserve explicit false so the API does not use the model default.
 		if boolValue, ok := think.(bool); ok {
-			if boolValue {
-				thinkValue = &api.ThinkValue{Value: boolValue}
-			}
+			thinkValue = &api.ThinkValue{Value: boolValue}
 		} else if stringValue, ok := think.(string); ok {
 			if stringValue != "" && stringValue != "none" {
 				thinkValue = &api.ThinkValue{Value: stringValue}

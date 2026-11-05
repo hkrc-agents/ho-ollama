@@ -1,0 +1,6 @@
+diff --git a/app/server/server.go b/app/server/server.go
+--- a/app/server/server.go
++++ b/app/server/server.go
+@@ -242,1 +242,1 @@
+-	cmd.Stdout, cmd.Stderr = s.log, s.log
++	cmd.Stdout, cmd.Stderr = platformCoreOutput(cmd, s.log)

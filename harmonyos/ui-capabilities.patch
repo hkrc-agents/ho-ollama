@@ -1,0 +1,32 @@
+diff --git a/app/ui/app/src/components/Settings.tsx b/app/ui/app/src/components/Settings.tsx
+--- a/app/ui/app/src/components/Settings.tsx
++++ b/app/ui/app/src/components/Settings.tsx
+@@ -485,1 +485,2 @@
+   const isMacOS = isMacOSPlatform();
++  const isHarmonyOS = window.OLLAMA_PLATFORM === "harmonyos";
+@@ -582,1 +583,2 @@
+-                      disabled={isRefreshing || isAwaitingConnection}
++                      disabled={isHarmonyOS || isRefreshing || isAwaitingConnection}
++                      title={isHarmonyOS ? "Account/browser integration is not yet available on HarmonyOS" : undefined}
+@@ -663,3 +665,5 @@
+-                        {settings.AutoUpdateEnabled
++                        {isHarmonyOS
++                          ? "Updates are installed as signed HarmonyOS application packages."
++                          : settings.AutoUpdateEnabled
+                           ? "Automatically download updates when available."
+                           : "Updates will not be downloaded automatically."}
+@@ -671,1 +675,2 @@
+-                      checked={settings.AutoUpdateEnabled}
++                      checked={!isHarmonyOS && settings.AutoUpdateEnabled}
++                      disabled={isHarmonyOS}
+@@ -715,2 +720,4 @@
+                         type="button"
+                         color="white"
++                        disabled={!window.webview?.selectModelsDirectory}
++                        title={!window.webview?.selectModelsDirectory ? "Native model-folder selection and persistent authorization are not yet available in this build" : undefined}
+@@ -751,1 +758,1 @@
+-                          settings.ContextLength || defaultContextLength || 0
++                          settings.ContextLength || (isHarmonyOS ? 1024 : defaultContextLength) || 0
+@@ -758,1 +765,2 @@
+                         options={[
++                          ...(isHarmonyOS ? [{ value: 1024, label: "1k" }] : []),

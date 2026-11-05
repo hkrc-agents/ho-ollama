@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChatIcon } from "@/components/ChatIcon";
-import { isWindowsPlatform } from "@/lib/platform";
+import { usesNativeWindowChrome } from "@/lib/window-layout";
 import { useState } from "react";
 
 let sessionSidebarOpen = false;
@@ -14,7 +14,7 @@ export function SidebarLayout({
   title?: string;
 }>) {
   const [sidebarOpen, setSidebarOpen] = useState(sessionSidebarOpen);
-  const isWindows = isWindowsPlatform();
+  const isWindows = usesNativeWindowChrome();
 
   const toggleSidebar = () => {
     sessionSidebarOpen = !sidebarOpen;

@@ -1,3 +1,6 @@
+import { HarmonyLoginStartup } from "@/lib/login-startup";
+import { HarmonyServices } from "@/lib/services";
+import { HarmonyModelStorage } from "@/lib/model-storage";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
@@ -26,7 +29,7 @@ import {
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
 import { Settings as SettingsType } from "@/gotypes";
-import { isWindowsPlatform } from "@/lib/platform";
+import { supportsDesktopIntegrations } from "@/lib/platform";
 import { settingsMutationScope } from "@/lib/settingsMutationScope";
 import { useUser } from "@/hooks/useUser";
 import { invalidateDesktopModels } from "@/lib/desktopModels";
@@ -482,7 +485,8 @@ export default function Settings() {
     );
   }
 
-  const isWindows = isWindowsPlatform();
+  const isMacOS = supportsDesktopIntegrations();
+  const isHarmonyOS = window.OLLAMA_PLATFORM === "harmonyos";
 
   return (
     <main className="flex min-h-0 w-full flex-1 flex-col select-none dark:bg-neutral-900">
@@ -492,6 +496,9 @@ export default function Settings() {
           aria-busy={resettingToDefaults}
           className="mx-auto max-w-4xl space-y-4 border-0 p-0"
         >
+          {isHarmonyOS && <HarmonyLoginStartup />}
+          {isHarmonyOS && <HarmonyServices />}
+          {isHarmonyOS && <HarmonyModelStorage />}
           {/* Connect Ollama Account */}
           <div className="overflow-hidden rounded-xl bg-white dark:bg-neutral-800">
             <div className="p-4">
@@ -578,7 +585,8 @@ export default function Settings() {
                       type="button"
                       color="white"
                       onClick={handleConnectOllamaAccount}
-                      disabled={isRefreshing || isAwaitingConnection}
+                      disabled={isHarmonyOS || isRefreshing || isAwaitingConnection}
+                      title={isHarmonyOS ? "Account/browser integration is not yet available on HarmonyOS" : undefined}
                     >
                       {isRefreshing || isAwaitingConnection ? (
                         <AnimatedDots />
@@ -629,7 +637,7 @@ export default function Settings() {
                 </div>
               </Field>
 
-              {!isWindows && (
+              {isMacOS && (
                 <Field>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-1 items-start space-x-3">
@@ -660,7 +668,9 @@ export default function Settings() {
                     <div>
                       <Label>Auto-download updates</Label>
                       <Description>
-                        {settings.AutoUpdateEnabled
+                        {isHarmonyOS
+                          ? "Updates are installed as signed HarmonyOS application packages."
+                          : settings.AutoUpdateEnabled
                           ? "Automatically download updates when available."
                           : "Updates will not be downloaded automatically."}
                       </Description>
@@ -668,7 +678,8 @@ export default function Settings() {
                   </div>
                   <div className="flex-shrink-0">
                     <Switch
-                      checked={settings.AutoUpdateEnabled}
+                      checked={!isHarmonyOS && settings.AutoUpdateEnabled}
+                      disabled={isHarmonyOS}
                       onChange={(checked) =>
                         handleChange("AutoUpdateEnabled", checked)
                       }
@@ -714,6 +725,8 @@ export default function Settings() {
                       <Button
                         type="button"
                         color="white"
+                        disabled={!window.webview?.selectModelsDirectory}
+                        title={!window.webview?.selectModelsDirectory ? "Native model-folder selection and persistent authorization are not yet available in this build" : undefined}
                         className="px-2"
                         onClick={async () => {
                           if (window.webview?.selectModelsDirectory) {
@@ -753,13 +766,14 @@ export default function Settings() {
                     <div className="mt-3">
                       <Slider
                         value={
-                          settings.ContextLength || defaultContextLength || 0
+                          settings.ContextLength || (isHarmonyOS ? 1024 : defaultContextLength) || 0
                         }
                         onChange={(value) => {
                           handleChange("ContextLength", value);
                         }}
                         disabled={!defaultContextLength}
                         options={[
+                          ...(isHarmonyOS ? [{ value: 1024, label: "1k" }] : []),
                           { value: 4096, label: "4k" },
                           { value: 8192, label: "8k" },
                           { value: 16384, label: "16k" },
@@ -776,7 +790,7 @@ export default function Settings() {
             </div>
           </div>
 
-          {!isWindows && (
+          {isMacOS && (
             <section
               aria-labelledby="apps-settings-heading"
               className="space-y-2"

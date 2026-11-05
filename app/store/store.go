@@ -1,4 +1,4 @@
-//go:build windows || darwin
+//go:build windows || darwin || harmonyos
 
 // Package store provides a simple JSON file store for the desktop application
 // to save and load data such as ollama server configuration, messages,
