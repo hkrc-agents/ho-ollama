@@ -82,3 +82,8 @@ For deliberate device tests, `harmonyos/tools/harmonyos_ui.py` and `run_hnp_auto
 accept `HDC` from the environment. They require an explicitly selected device and the
 corresponding installed test client. They are not part of the offline build or a claim of
 complete device acceptance. No model, SDK, device credentials or artifact path is bundled.
+
+## Fused-operator boundary
+
+ho-llama-models is private. Project-specific Ascend C full-network operator sources, build recipes, optimization tools, platform profiles and validation internals belong there.
+After correctness and matched performance qualification and an explicit operator release, ho-llama.cpp may add a small versioned runtime adapter to load and invoke the released artifact. That public adapter must not require private source access. The current HarmonyOS port remains CPU-only; this change adds no NPU integration.

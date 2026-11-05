@@ -10,3 +10,5 @@ Do not set RLIMIT_AS or request an exception for it; that limit was permanently 
 Build/host-test passes do not imply device numerical, lifecycle or release qualification.
 No device deployment, signing, reboot or user-setting change is part of repository preparation.
 Upstream contributions are a separate human-reviewed activity; do not open PRs automatically.
+
+Keep Ascend C full-network operator construction and optimization in the private ho-llama-models repository. Future public llama.cpp changes may load/invoke a released operator only after correctness and matched performance qualification. Do not copy private sources/build recipes into this fork.

@@ -11,7 +11,7 @@
   ],
   "files": {
     "harmonyos/.gitignore": "f8e9033d69a4ad4f66193e823f78c4dc8c0b2fa74b8dbd72968b732c880ff1d6",
-    "harmonyos/AGENTS.md": "a554ea243396e2b80d73b3a78da93f6a134a155b2ac88643967e0e8b3d167ecd",
+    "harmonyos/AGENTS.md": "e13db7358954c8b724776acfb115bb334f8695dd54d4be701a994f5de0aebfe0",
     "harmonyos/app-onboarding-path.patch": "f9cd07a2eba15d14267789bc59cb1a134655def89fc60633f06de3a3c21f0879",
     "harmonyos/app-think-false.patch": "ad41e0aa6a69ea4e7908e2d9bcf542be28957204266d2bafbb44bb0c8ca2a531",
     "harmonyos/arm64-cpu-mlx-headers.patch": "6f7127009f9ade7b0fa932e0b9498b160cf33c71f8596caae7bbc8ce27568016",
