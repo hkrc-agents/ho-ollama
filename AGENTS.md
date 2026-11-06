@@ -15,7 +15,7 @@ for port-specific rules.
    [Official HarmonyOS Command Line Tools](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/ide-commandline-get)
 3. Run `harmonyos/tools/build_runtime.py`, then `build_official_app.py`,
    `build_hap.py` and `package_full_hap.py` as documented. Use fresh output
-   directories outside the checkout. The full Go APP/HAP path is x86_64.
+   directories under the checkout's Git-ignored `build/` or `target/`. The full Go APP/HAP path is x86_64.
    ARM64 uses the runtime builder's `--arch arm64 --native-only` path.
 4. Run `python3 -m unittest discover -s harmonyos/tests -v`. For the
    maintained executable route and the archived HAP-managed SO design, see
@@ -34,7 +34,8 @@ cmake --build build --parallel 8
 For quick Go-only iteration against an existing native payload:
 
 ```sh
-go build .
+mkdir -p build
+go build -o build/ollama .
 go run . serve
 ```
 

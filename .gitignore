@@ -5,6 +5,7 @@
 .swp
 dist
 build
+/target/
 .cache
 .gocache
 *.exe

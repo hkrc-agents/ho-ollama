@@ -70,7 +70,7 @@ def materialize_source(objects, commit, destination):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cache', type=Path, default=Path.home() / '.cache/ho-ollama')
+    parser.add_argument('--cache', type=Path, default=ROOT / 'build/cache')
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--sdk', type=Path, required=True)
     parser.add_argument('--llama-port', type=Path, required=True, help='ho-llama.cpp checkout with harmonyos/ adapters')

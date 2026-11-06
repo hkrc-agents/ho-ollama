@@ -19,7 +19,8 @@ Obtain the SDK using the [official command-line tools instructions](https://deve
 
 ## Matched runtime and APP
 
-Choose new output directories. Both repositories may be cloned anywhere; pass their paths explicitly.
+Run from the repository root and choose a fresh run directory under the Git-ignored
+`build/` or `target/`. Both repositories may be cloned anywhere. Pass their paths explicitly.
 The runtime recipe creates clean source trees from the tested Git base objects, then applies the
 owned platform patches. It never copies a dirty upstream cache. The fork's `harmonyos/` adapters
 are the maintained preparation inputs; generated prepared trees are build artifacts.
@@ -28,14 +29,16 @@ are the maintained preparation inputs; generated prepared trees are build artifa
 export HARMONY_NATIVE_SDK=/path/to/sdk/default/openharmony/native
 export PICO_GO=/path/to/go1.26/bin/go
 export PATH=/path/to/node24/bin:$PATH
+run_dir="$PWD/build/harmonyos-x86_64"
 python3 harmonyos/tools/build_runtime.py \
   --llama-port /path/to/ho-llama.cpp --runner-objects /path/to/ho-llama.cpp \
   --sdk "$HARMONY_NATIVE_SDK" --go "$PICO_GO" \
-  --cache /path/to/build-cache --out /path/to/runtime
-# Read the prepared Ollama path from runtime/source-selection.json.
+  --cache "$PWD/build/cache" --out "$run_dir/runtime"
+prepared_ollama=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["ollama"])' \
+  "$run_dir/runtime/source-selection.json")
 python3 harmonyos/tools/build_official_app.py \
-  --source /path/from/source-selection/ollama \
-  --runtime-payload /path/to/runtime/payload --out /path/to/app-runtime
+  --source "$prepared_ollama" \
+  --runtime-payload "$run_dir/runtime/payload" --out "$run_dir/app-runtime"
 ```
 
 Use `--tls --router` on the runtime builder for the existing LibreSSL/explicit CA-directory
@@ -50,18 +53,20 @@ All outputs are build candidates, not inherited device qualification.
 ## HAP and full packaging
 
 ```bash
-python3 harmonyos/tools/build_hap.py --out /path/to/hap-build \
+python3 harmonyos/tools/build_hap.py --out "$run_dir/hap-build" \
   --tools-dir /path/to/command-line-tools/bin --java-home /path/to/jdk17 \
   --sdk-root /path/to/sdk --mode debug
 python3 harmonyos/tools/package_full_hap.py \
-  --native harmonyos/hap/entry/build/default/outputs/default/entry-default-unsigned.hap \
-  --build-record /path/to/hap-build/identity.json --runtime /path/to/app-runtime \
+  --native "$run_dir/hap-build/entry-default-unsigned.hap" \
+  --build-record "$run_dir/hap-build/identity.json" --runtime "$run_dir/app-runtime" \
   --sdk /path/to/sdk/default/openharmony --java /path/to/jdk17/bin/java \
-  --out /path/to/packaged
+  --out "$run_dir/packaged"
 ```
 
 The new full packager creates the HNP from the complete hash-checked payload and preserves
 SDK HAP contents; it needs no historical signed package or frozen private runtime.
+The HAP builder stages the project in `hap-build/app/` and exports the unsigned HAP
+beside its build record.
 Outputs are unsigned. Configure personal signing externally; no certificates are in the repository.
 The public tree contains source and static test fixtures only. Keep output packages, logs and build receipts in the selected output directories.
 
@@ -73,10 +78,10 @@ python3 -m unittest discover -s harmonyos/tests -v
 npm run test -- --run
 npm run build
 python3 harmonyos/tools/test_model_storage.py \
-  --web /path/to/prepared-ollama/app/ui/app --out /path/to/storage-tests
+  --web "$prepared_ollama/app/ui/app" --out "$run_dir/storage-tests"
 # In the prepared source, after frontend dist has been built:
 python3 harmonyos/tools/run_app_host_tests.py \
-  --source /path/to/prepared-ollama --go "$PICO_GO" --out /path/to/app-host-check
+  --source "$prepared_ollama" --go "$PICO_GO" --out "$run_dir/app-host-check"
 ```
 
 The independent HNP test app is built from [harmonyos/test-client](harmonyos/test-client/README.md); it needs no private scaffold, model or runtime binary in the source tree. Run its host tests with `node --test harmonyos/test-client/tests/*.test.mjs`.
