@@ -6,6 +6,9 @@ The prepared Go/React changes are also applied in the normal upstream source loc
 Keep generic fixes separate from downstream product work when preparing future upstream submissions.
 [Supported build paths](harmonyos/STATUS.md)
 
+See [HarmonyOS service launch designs](harmonyos/SERVICE_LAUNCH_DESIGNS.md) for the
+maintained executable path and the earlier HAP-managed native-child experiment.
+
 ## Dependencies
 
 Linux/WSL, Git, Python 3.10+, CMake, Ninja or Make, Go 1.26.0, Node 22+ (tested with 24), npm,
